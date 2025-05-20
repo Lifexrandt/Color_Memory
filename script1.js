@@ -1,3 +1,10 @@
+let state = 0;
+let draws = 0;
+let pairs = 0;
+let color1, color2;
+let revealedCard1, revealedCard2;
+const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"]
+
 function createCards() {
     var gameboard = document.getElementById("game-board");
     while (gameboard.firstChild) {
@@ -14,9 +21,9 @@ function createCards() {
     const pauseButton = document.getElementById("startButton");
     pauseButton.disabled = "true";
     pauseButton.style.opacity = 0.5;
+    pairs = 0;
 }
 
-const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"]
 function shuffle() {
     for (let i = cards.length -1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i+1));
@@ -30,11 +37,6 @@ function shuffle() {
     }
 }
 
-let state = 0;
-let draws = 0;
-let pairs = 0;
-let color1, color2;
-let revealedCard1, revealedCard2;
 function revealCard(c) {
     if (draws == 0) {
         const card = document.getElementById(c);
