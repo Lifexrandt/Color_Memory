@@ -26,34 +26,57 @@ function shuffle() {
 }
 
 let state = 0;
+let draws = 0;
 let color1, color2;
 let revealedCard1, revealedCard2;
 function revealCard(c) {
-    const card = document.getElementById(c);
-    const color = card.getAttribute("data-color");
-    card.style.setProperty("--real-color", color);
-    card.className = "flipped";
-    if (state == 0) {
-        color1 = color;
-        revealedCard1 = card;
-        state = 1;
-    } else {
-        color2 = color;
-        revealedCard2 = card;
-        if (color1 === color2) {
-            setTimeout(
-                revealedCard1.className = "matched",
-                revealedCard2.className = "matched",
-                state = 0,
-                1000
-            )
+    if (draws == 0) {
+        const card = document.getElementById(c);
+        const color = card.getAttribute("data-color");
+        card.style.setProperty("--real-color", color);
+        card.className = "flipped";
+        if (state == 0) {
+            color1 = color;
+            revealedCard1 = card;
+            state = 1;
+        } else if (revealedCard1 == card) {
+
         } else {
-            setTimeout(
-                revealedCard1.className = "card",
-                revealedCard2.className = "card",
-                state = 0,
-                1000
-            )
+            draws = 1;
+            color2 = color;
+            revealedCard2 = card;
+            if (color1 === color2) {
+                card.removeEventListener("click", function(){revealCard("card" + b)});
+                setTimeout(
+                    removeCards,
+                    1000
+                )
+            } else {
+                setTimeout(
+                    returnCards,
+                    1000
+                )
+            }
+        setTimeout(
+            resetDraws,
+            1100
+        )
         }
     }
+}
+
+function removeCards () {
+    revealedCard1.className = "matched";
+    revealedCard2.className = "matched";
+}
+
+function returnCards () {
+    revealedCard1.className = "card";
+    revealedCard2.className = "card";
+}
+
+function resetDraws() {
+    state = 0;
+    draws = 0;
+    console.log("passt");
 }
