@@ -1,6 +1,8 @@
-// answer array = 0
-
 function createCards() {
+    var gameboard = document.getElementById("game-board");
+    while (gameboard.firstChild) {
+        gameboard.removeChild(gameboard.firstChild);
+    }
     for (let b = 0; b < 12; b++) {
         const card = document.createElement("div");
         card.id = "card" + b;
@@ -9,8 +11,9 @@ function createCards() {
         document.getElementById("game-board").appendChild(card);
     }
     shuffle();
-    const removeButton = document.getElementById("startButton");
-    removeButton.remove();
+    const pauseButton = document.getElementById("startButton");
+    pauseButton.disabled = "true";
+    pauseButton.style.opacity = 0.5;
 }
 
 const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"]
@@ -73,6 +76,11 @@ function removeCards () {
     revealedCard2.className = "matched";
     pairs = pairs +1;
     console.log(pairs)
+    if (pairs == 6) {
+        const pauseButton = document.getElementById("startButton");
+        pauseButton.removeAttribute("disabled");
+        pauseButton.style.opacity = 1;
+    }
 }
 
 function returnCards () {
