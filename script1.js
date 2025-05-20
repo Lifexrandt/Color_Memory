@@ -1,3 +1,5 @@
+// answer array = 0
+
 function createCards() {
     for (let b = 0; b < 12; b++) {
         const card = document.createElement("div");
@@ -27,6 +29,7 @@ function shuffle() {
 
 let state = 0;
 let draws = 0;
+let pairs = 0;
 let color1, color2;
 let revealedCard1, revealedCard2;
 function revealCard(c) {
@@ -46,7 +49,7 @@ function revealCard(c) {
             color2 = color;
             revealedCard2 = card;
             if (color1 === color2) {
-                card.removeEventListener("click", function(){revealCard("card" + b)});
+                console.log(revealedCard1 + revealedCard2)
                 setTimeout(
                     removeCards,
                     1000
@@ -68,6 +71,8 @@ function revealCard(c) {
 function removeCards () {
     revealedCard1.className = "matched";
     revealedCard2.className = "matched";
+    pairs = pairs +1;
+    console.log(pairs)
 }
 
 function returnCards () {
@@ -78,5 +83,4 @@ function returnCards () {
 function resetDraws() {
     state = 0;
     draws = 0;
-    console.log("passt");
 }
