@@ -2,11 +2,13 @@ let state = 0;
 let draws = 0;
 let pairs = 0;
 let trys = 0;
+let timer = 0;
+let ingame = 0;
 let wantedcards, wantedpairsCustom, wantedpairsRadio;
 let color1, color2;
 let revealedCard1, revealedCard2;
-//const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"];
 let cards = [];
+//const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"];
 
 function createCards() {
     wantedpairsCustom = document.getElementById("pairsCustom").value;
@@ -16,7 +18,6 @@ function createCards() {
     } else {
         wantedcards = wantedpairsCustom*2
     }
-    console.log(wantedpairsCustom + wantedpairsRadio)
     var gameboard = document.getElementById("game-board");
     while (gameboard.firstChild) {
         gameboard.removeChild(gameboard.firstChild);
@@ -32,11 +33,15 @@ function createCards() {
     const pauseButton = document.getElementById("startButton");
     pauseButton.disabled = "true";
     pauseButton.style.opacity = 0.5;
+    gameboard.scrollIntoView({block: "center", behavior: "instant"})
     pairs = 0;
     trys = 0;
     document.getElementById("tryCounter").innerHTML = "Versuche: " +trys;
     randomColorGenerator();
     shuffle();
+    ingame = 1;
+    timer = 0;
+    startTimer();
 }
 
 function randomColorGenerator () {
@@ -60,7 +65,7 @@ function shuffle() {
 }
 
 function revealCard(c) {
-    console.log(cards)
+    console.log(ingame)
     if (draws == 0) {
         const card = document.getElementById(c);
         const color = card.getAttribute("data-color");
@@ -77,7 +82,6 @@ function revealCard(c) {
             color2 = color;
             revealedCard2 = card;
             if (color1 === color2) {
-                console.log(revealedCard1 + revealedCard2)
                 setTimeout(
                     removeCards,
                     1000
@@ -98,15 +102,23 @@ function revealCard(c) {
     }
 }
 
+function startTimer() {
+    document.getElementById("timer").innerHTML = "Timer: " + timer + " Sekunden";
+    if (ingame == 1) {
+        timer = timer +1;
+        setTimeout(startTimer, 1000)
+    }
+}
+
 function removeCards () {
     revealedCard1.className = "matched";
     revealedCard2.className = "matched";
     pairs = pairs +1;
-    console.log(pairs)
     if (pairs == wantedcards/2) {
         const pauseButton = document.getElementById("startButton");
         pauseButton.removeAttribute("disabled");
         pauseButton.style.opacity = 1;
+        ingame = 0;
     }
 }
 
