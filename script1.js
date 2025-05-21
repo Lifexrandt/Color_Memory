@@ -4,6 +4,7 @@ let pairs = 0;
 let trys = 0;
 let timer = 0;
 let ingame = 0;
+let playedGames;
 let wantedcards, wantedpairsCustom, wantedpairsRadio;
 let color1, color2;
 let revealedCard1, revealedCard2;
@@ -118,6 +119,7 @@ function removeCards () {
         const pauseButton = document.getElementById("startButton");
         pauseButton.removeAttribute("disabled");
         pauseButton.style.opacity = 1;
+        saveHighscore()
         ingame = 0;
     }
 }
@@ -130,4 +132,21 @@ function returnCards () {
 function resetDraws() {
     state = 0;
     draws = 0;
+}
+
+function saveHighscore() {
+    playedGames = Number(localStorage.getItem("playedGames"));
+    playedGames = playedGames +1;
+    localStorage.setItem("playedGames", playedGames);
+    localStorage.setItem("timeGame" +playedGames, timer);
+    localStorage.setItem("trysGame" +playedGames, trys);
+    localStorage.setItem("pairsGame" +playedGames, wantedcards/2);
+    localStorage.setItem("entry" +playedGames, playedGames);
+    for (l = 1; l <= playedGames; l++) {
+        const entry = document.createElement("div");
+        entry.id = "scoreboardentry" + l;
+        entry.className = "scoreboardentry";
+        entry.innerHTML = "Du hast im " + l + ". Spiel " + localStorage.getItem("timeGame" +l) + " Sekunden und " + localStorage.getItem("trysGame" +l) + " Versuche für " + localStorage.getItem("pairsGame" +l) + " Paare gebraucht!";
+        document.getElementById("scoreboard").appendChild(entry);
+    }
 }
