@@ -16,7 +16,7 @@
             <div id="timer"></div>
         </div>
         <div class="container" id="game-board"></div>
-        <p class="normal_text">Mit wie vielen Paaren möchtest du spielen?</p><br>
+        <div id="diffSelectorText">Mit wie vielen Paaren möchtest du spielen?</div><br>
         <div id="pairSelectorFlexbox">
             <div>
                 <label for="diffEasy">Leicht (3 Paare)</label>
@@ -35,7 +35,9 @@
                 <input id="pairsCustom" type="number" min="2" max="300" placeholder="Anzahl Paare">
             </div>
         </div>
-        <div id="scoreboard">Scoreboard</div>
+        <br><br>
+        <div id="scoreboardText">Scoreboard:</div>
+        <div id="scoreboard"></div>
         <br><br>
         <button onClick="createCards()" id="startButton">Spiel starten!</button>
         <script src="script1.js"></script>

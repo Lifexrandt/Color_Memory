@@ -142,11 +142,39 @@ function saveHighscore() {
     localStorage.setItem("trysGame" +playedGames, trys);
     localStorage.setItem("pairsGame" +playedGames, wantedcards/2);
     localStorage.setItem("entry" +playedGames, playedGames);
+    var scoreboardEntry = document.getElementsByClassName("scoreboardEntry");
+    while (scoreboardEntry.firstChild) {
+        scoreboardEntry.removeChild(scoreboardEntry.firstChild);
+    }
+    var gameboard = document.getElementById("scoreboard");
+    while (scoreboard.firstChild) {
+        scoreboard.removeChild(scoreboard.firstChild);
+    }
     for (l = 1; l <= playedGames; l++) {
         const entry = document.createElement("div");
-        entry.id = "scoreboardentry" + l;
-        entry.className = "scoreboardentry";
-        entry.innerHTML = "Du hast im " + l + ". Spiel " + localStorage.getItem("timeGame" +l) + " Sekunden und " + localStorage.getItem("trysGame" +l) + " Versuche für " + localStorage.getItem("pairsGame" +l) + " Paare gebraucht!";
+        entry.id = "scoreboardEntry" + l;
+        entry.className = "scoreboardEntry";
+//        entry.innerHTML = "Du hast im " + l + ". Spiel " + localStorage.getItem("timeGame" +l) + " Sekunden und " + localStorage.getItem("trysGame" +l) + " Versuche für " + localStorage.getItem("pairsGame" +l) + " Paare gebraucht!";
+        const entryNumber = document.createElement("div");
+        entryNumber.id = "entryNumber" + l;
+        entryNumber.className = "entryComponent";
+        entryNumber.innerHTML = l + ".";
+        const entryTime = document.createElement("div");
+        entryTime.id = "entryTime" + l;
+        entryTime.className = "entryComponent";
+        entryTime.innerHTML = "Zeit: " + localStorage.getItem("timeGame" +l) + "s";
+        const entryTrys = document.createElement("div");
+        entryTrys.id = "entryTrys" + l;
+        entryTrys.className = "entryComponent";
+        entryTrys.innerHTML = "Versuche: " + localStorage.getItem("trysGame" +l);
+        const entryPairs = document.createElement("div");
+        entryPairs.id = "entryPairs" + l;
+        entryPairs.className = "entryComponent";
+        entryPairs.innerHTML = "Paare: " + localStorage.getItem("pairsGame" +l);
         document.getElementById("scoreboard").appendChild(entry);
+        document.getElementById("scoreboardEntry" +l).appendChild(entryNumber);
+        document.getElementById("scoreboardEntry" +l).appendChild(entryTime);
+        document.getElementById("scoreboardEntry" +l).appendChild(entryTrys);
+        document.getElementById("scoreboardEntry" +l).appendChild(entryPairs);
     }
 }
