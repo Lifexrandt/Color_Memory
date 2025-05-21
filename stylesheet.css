@@ -7,6 +7,11 @@
     padding: 30px;
 }
 
+.normal_text {
+    padding: 10px;
+    text-align: center;
+}
+
 @media only screen and (min-width: 0px) {
     .container {
         display: grid;
@@ -118,4 +123,24 @@
     font-size: 16px;
     display: block;
     margin: auto;
+}
+
+#pairSelectorFlexbox {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#pairsCustom {
+    width: 100px;
+    text-align: center;
+}
+
+#pairSelectorFlexbox > div {
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    padding: 20px;
 }

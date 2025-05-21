@@ -12,9 +12,27 @@
     <body>
         <h1 id="headline">Farbmemory Spiel</h1>
         <div class="container" id="game-board"></div>
+        <p class="normal_text">Mit wie vielen Paaren möchtest du spielen?</p><br>
+        <div id="pairSelectorFlexbox">
+            <div>
+                <label for="diffEasy">Leicht (3 Paare)</label>
+                <input type="radio" id="diffEasy" name="difficultySelector" value="3" />
+            </div>
+            <div>
+                <label for="diffEasy">Mittel (6 Paare)</label>
+                <input type="radio" id="diffEasy" name="difficultySelector" value="6" />
+            </div>
+            <div>
+                <label for="diffHard">Schwierig (10 Paare)</label>
+                <input type="radio" id="diffHard" name="difficultySelector" value="10" />
+            </div>
+            <div>
+                <label id="pairsCustomLabel" for="pairsCustom">Custom</label>
+                <input id="pairsCustom" type="number" min="2" max="300" placeholder="Anzahl Paare">
+            </div>
+        </div>
         <br><br>
         <button onClick="createCards()" id="startButton">Spiel starten!</button>
         <script src="script1.js"></script>
     </body>
-<!-- test branch commit-->
 </html>

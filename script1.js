@@ -1,27 +1,46 @@
 let state = 0;
 let draws = 0;
 let pairs = 0;
+let wantedcards, wantedpairsCustom, wantedpairsRadio;
 let color1, color2;
 let revealedCard1, revealedCard2;
-const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"]
+//const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"];
+let cards = [];
 
 function createCards() {
+    wantedpairsCustom = document.getElementById("pairsCustom").value;
+    wantedpairsRadio = document.querySelector("input[name=difficultySelector]:checked").value;
+    if (wantedpairsCustom == 0) {
+        wantedcards = wantedpairsRadio*2
+    } else {
+        wantedcards = wantedpairsCustom*2
+    }
+    console.log(wantedpairsCustom + wantedpairsRadio)
     var gameboard = document.getElementById("game-board");
     while (gameboard.firstChild) {
         gameboard.removeChild(gameboard.firstChild);
     }
-    for (let b = 0; b < 12; b++) {
+    cards = [];
+    for (let b = 0; b < wantedcards; b++) {
         const card = document.createElement("div");
         card.id = "card" + b;
         card.className = "card";
         card.addEventListener("click", function(){revealCard("card" + b)});
         document.getElementById("game-board").appendChild(card);
     }
-    shuffle();
     const pauseButton = document.getElementById("startButton");
     pauseButton.disabled = "true";
     pauseButton.style.opacity = 0.5;
     pairs = 0;
+    randomColorGenerator();
+    shuffle();
+}
+
+function randomColorGenerator () {
+    for (i = 0; i < wantedcards/2; i++) {
+        let f = '#' + Math.floor(Math.random()*16777215).toString(16);
+        cards.push(f, f);
+    }
 }
 
 function shuffle() {
@@ -31,13 +50,14 @@ function shuffle() {
         cards[i] = cards[j];
         cards[j] = k;
     }
-    for (let a = 0; a < 12; a++) {
+    for (let a = 0; a < wantedcards; a++) {
         const currentCard = document.getElementById("card" + a);
         currentCard.dataset.color = cards[a];
     }
 }
 
 function revealCard(c) {
+    console.log(cards)
     if (draws == 0) {
         const card = document.getElementById(c);
         const color = card.getAttribute("data-color");
@@ -78,7 +98,7 @@ function removeCards () {
     revealedCard2.className = "matched";
     pairs = pairs +1;
     console.log(pairs)
-    if (pairs == 6) {
+    if (pairs == wantedcards/2) {
         const pauseButton = document.getElementById("startButton");
         pauseButton.removeAttribute("disabled");
         pauseButton.style.opacity = 1;
