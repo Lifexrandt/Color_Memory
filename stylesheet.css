@@ -112,7 +112,17 @@
     pointer-events: none;
 } 
 
-#tryCounter {
+#gamestats {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#gamestats > div {
+    height: 30px;
+    line-height: 30px;
     text-align: center;
     padding: 20px;
 }
