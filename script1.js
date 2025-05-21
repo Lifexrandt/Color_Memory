@@ -1,6 +1,7 @@
 let state = 0;
 let draws = 0;
 let pairs = 0;
+let trys = 0;
 let wantedcards, wantedpairsCustom, wantedpairsRadio;
 let color1, color2;
 let revealedCard1, revealedCard2;
@@ -32,6 +33,8 @@ function createCards() {
     pauseButton.disabled = "true";
     pauseButton.style.opacity = 0.5;
     pairs = 0;
+    trys = 0;
+    document.getElementById("tryCounter").innerHTML = "Versuche: " +trys;
     randomColorGenerator();
     shuffle();
 }
@@ -85,6 +88,8 @@ function revealCard(c) {
                     1000
                 )
             }
+        trys = trys +1;
+        document.getElementById("tryCounter").innerHTML = "Versuche: " +trys;
         setTimeout(
             resetDraws,
             1100
