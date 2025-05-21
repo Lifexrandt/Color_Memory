@@ -112,6 +112,11 @@
     pointer-events: none;
 } 
 
+#tryCounter {
+    text-align: center;
+    padding: 20px;
+}
+
 #startButton {
     background-color: dimgray;
     border-style: hidden;
