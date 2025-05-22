@@ -9,14 +9,14 @@
         <link rel="stylesheet" href="stylesheet.css">
     </head>
 
-    <body>
+    <body onload="loadScoreboard()">
         <h1 id="headline">Farbmemory Spiel</h1>
         <div id="gamestats">
             <div id="tryCounter"></div>
             <div id="timer"></div>
         </div>
         <div class="container" id="game-board"></div>
-        <p class="normal_text">Mit wie vielen Paaren möchtest du spielen?</p><br>
+        <div id="diffSelectorText">Mit wie vielen Paaren möchtest du spielen?</div><br>
         <div id="pairSelectorFlexbox">
             <div>
                 <label for="diffEasy">Leicht (3 Paare)</label>
@@ -36,7 +36,12 @@
             </div>
         </div>
         <br><br>
-        <button onClick="createCards()" id="startButton">Spiel starten!</button>
+        <button onClick="createCards()" id="startButton" class="button">Spiel starten!</button>       
+        <br><br>
+        <div id="scoreboardText">Scoreboard:</div>
+        <div id="scoreboard"></div>
+        <br><br>
+        <button onClick="resetScoreboard()" id="scoreboardResetButton" class="button">Scoreboard zurücksetzen!</button>
         <script src="script1.js"></script>
     </body>
 </html>

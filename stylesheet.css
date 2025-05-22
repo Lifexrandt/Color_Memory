@@ -7,8 +7,9 @@
     padding: 30px;
 }
 
-.normal_text {
-    padding: 10px;
+#diffSelectorText {
+    margin-top: 20px;
+    margin-bottom: -20px;
     text-align: center;
 }
 
@@ -127,7 +128,7 @@
     padding: 20px;
 }
 
-#startButton {
+.button {
     background-color: dimgray;
     border-style: hidden;
   	border-radius: 8px;
@@ -154,8 +155,29 @@
 }
 
 #pairSelectorFlexbox > div {
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    padding: 20px;
+}
+
+#scoreboardText {
+    text-align: center;
+}
+
+.scoreboardEntry {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+    max-width: 400px;
+}
+
+.entryComponent {
+    width: 100px;
     height: 30px;
     line-height: 30px;
     text-align: center;
-    padding: 20px;
+    padding-top: 5px;
 }
