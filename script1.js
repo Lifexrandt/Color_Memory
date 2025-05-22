@@ -1,3 +1,9 @@
+const CARD_CLASS = "card";
+const FLIPPED_CLASS = "flipped";
+const MATCHED_CLASS = "matched";
+const START_BUTTON = document.getElementById("startButton");
+const FLIP_DELAY_MS = 1000;
+
 let gameState = {
     playedGamesCounter: Number(localStorage.getItem("playedGamesCounter")),
     firstCardFlipped: false,
@@ -31,15 +37,14 @@ function createCards() {
     }
     gameState.cardColorPairs = [];
     for (let b = 0; b < gameState.totalPairsToFind*2; b++) {
-        const card = document.createElement("div");
-        card.id = "card" + b;
-        card.className = "card";
-        card.addEventListener("click", function(){revealCard("card" + b)});
-        document.getElementById("game-board").appendChild(card);
+        const CARD = document.createElement("div");
+        CARD.id = "card" + b;
+        CARD.className = CARD_CLASS;
+        CARD.addEventListener("click", function(){revealCard("card" + b)});
+        document.getElementById("game-board").appendChild(CARD);
     }
-    const pauseButton = document.getElementById("startButton");
-    pauseButton.disabled = "true";
-    pauseButton.style.opacity = 0.5;
+    START_BUTTON.disabled = "true";
+    START_BUTTON.style.opacity = 0.5;
     gameboard.scrollIntoView({block: "center", behavior: "instant"})
     gameState.pairsFound = 0;
     gameState.currentTries = 0;
@@ -66,37 +71,36 @@ function shuffle() {
         gameState.cardColorPairs[j] = k;
     }
     for (let a = 0; a < gameState.totalPairsToFind*2; a++) {
-        const currentCard = document.getElementById("card" + a);
-        currentCard.dataset.color = gameState.cardColorPairs[a];
+        const CURRENT_CARD = document.getElementById("card" + a);
+        CURRENT_CARD.dataset.color = gameState.cardColorPairs[a];
     }
 }
 
 function revealCard(c) {
     if (gameState.canClick == true) {
-        const card = document.getElementById(c);
-        const color = card.getAttribute("data-color");
-        console.log(color)
-        card.style.setProperty("--real-color", color);
-        card.className = "flipped";
+        const CARD = document.getElementById(c);
+        const COLOR = CARD.getAttribute("data-color");
+        CARD.style.setProperty("--real-color", COLOR);
+        CARD.className = "flipped";
         if (gameState.firstCardFlipped == false) {
-            gameState.firstClickedCardColor = color;
-            gameState.firstClickedCard = card;
+            gameState.firstClickedCardColor = COLOR;
+            gameState.firstClickedCard = CARD;
             gameState.firstCardFlipped = true;
-        } else if (gameState.firstClickedCard == card) {
+        } else if (gameState.firstClickedCard == CARD) {
 
         } else {
             gameState.canClick = false;
-            gameState.secondClickedCardColor = color;
-            gameState.secondClickedCard = card;
+            gameState.secondClickedCardColor = COLOR;
+            gameState.secondClickedCard = CARD;
             if (gameState.firstClickedCardColor === gameState.secondClickedCardColor) {
                 setTimeout(
                     removeCards,
-                    1000
+                    FLIP_DELAY_MS
                 )
             } else {
                 setTimeout(
                     returnCards,
-                    1000
+                    FLIP_DELAY_MS
                 )
             }
         gameState.currentTries = gameState.currentTries +1;
@@ -122,9 +126,8 @@ function removeCards () {
     gameState.secondClickedCard.className = "matched";
     gameState.pairsFound = gameState.pairsFound +1;
     if (gameState.pairsFound == gameState.totalPairsToFind) {
-        const pauseButton = document.getElementById("startButton");
-        pauseButton.removeAttribute("disabled");
-        pauseButton.style.opacity = 1;
+        START_BUTTON.removeAttribute("disabled");
+        START_BUTTON.style.opacity = 1;
         saveHighscore()
         gameState.isPlaying = false;
     }
@@ -144,7 +147,7 @@ function saveHighscore() {
     gameState.playedGamesCounter = gameState.playedGamesCounter +1;
     localStorage.setItem("playedGamesCounter", gameState.playedGamesCounter);
     localStorage.setItem("timeGame" +gameState.playedGamesCounter, gameState.currentTime);
-    localStorage.setItem("trysGame" +gameState.playedGamesCounter, gameState.currentTries);
+    localStorage.setItem("triesGame" +gameState.playedGamesCounter, gameState.currentTries);
     localStorage.setItem("pairsGame" +gameState.playedGamesCounter, gameState.totalPairsToFind);
     localStorage.setItem("entry" +gameState.playedGamesCounter, gameState.playedGamesCounter);
     loadScoreboard();
@@ -160,30 +163,30 @@ function loadScoreboard() {
         scoreboard.removeChild(scoreboard.firstChild);
     }
     for (l = 1; l <= gameState.playedGamesCounter; l++) {
-        const entry = document.createElement("div");
-        entry.id = "scoreboardEntry" + l;
-        entry.className = "scoreboardEntry";
-        const entryNumber = document.createElement("div");
-        entryNumber.id = "entryNumber" + l;
-        entryNumber.className = "entryComponent";
-        entryNumber.innerHTML = l + ".";
-        const entryTime = document.createElement("div");
-        entryTime.id = "entryTime" + l;
-        entryTime.className = "entryComponent";
-        entryTime.innerHTML = "Zeit: " + localStorage.getItem("timeGame" +l) + "s";
-        const entryTrys = document.createElement("div");
-        entryTrys.id = "entryTrys" + l;
-        entryTrys.className = "entryComponent";
-        entryTrys.innerHTML = "Versuche: " + localStorage.getItem("trysGame" +l);
-        const entryPairs = document.createElement("div");
-        entryPairs.id = "entryPairs" + l;
-        entryPairs.className = "entryComponent";
-        entryPairs.innerHTML = "Paare: " + localStorage.getItem("pairsGame" +l);
-        document.getElementById("scoreboard").appendChild(entry);
-        document.getElementById("scoreboardEntry" +l).appendChild(entryNumber);
-        document.getElementById("scoreboardEntry" +l).appendChild(entryTime);
-        document.getElementById("scoreboardEntry" +l).appendChild(entryTrys);
-        document.getElementById("scoreboardEntry" +l).appendChild(entryPairs);
+        const ENTRY = document.createElement("div");
+        ENTRY.id = "scoreboardEntry" + l;
+        ENTRY.className = "scoreboardEntry";
+        const ENTRY_NUMBER = document.createElement("div");
+        ENTRY_NUMBER.id = "entryNumber" + l;
+        ENTRY_NUMBER.className = "entryComponent";
+        ENTRY_NUMBER.innerHTML = l + ".";
+        const ENTRY_TIME = document.createElement("div");
+        ENTRY_TIME.id = "entryTime" + l;
+        ENTRY_TIME.className = "entryComponent";
+        ENTRY_TIME.innerHTML = "Zeit: " + localStorage.getItem("timeGame" +l) + "s";
+        const ENTRY_TRIES = document.createElement("div");
+        ENTRY_TRIES.id = "entryTries" + l;
+        ENTRY_TRIES.className = "entryComponent";
+        ENTRY_TRIES.innerHTML = "Versuche: " + localStorage.getItem("triesGame" +l);
+        const ENTRY_PAIRS = document.createElement("div");
+        ENTRY_PAIRS.id = "entryPairs" + l;
+        ENTRY_PAIRS.className = "entryComponent";
+        ENTRY_PAIRS.innerHTML = "Paare: " + localStorage.getItem("pairsGame" +l);
+        document.getElementById("scoreboard").appendChild(ENTRY);
+        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_NUMBER);
+        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_TIME);
+        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_TRIES);
+        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_PAIRS);
     }
 }
 
