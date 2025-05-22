@@ -4,7 +4,7 @@ let pairs = 0;
 let trys = 0;
 let timer = 0;
 let ingame = 0;
-let playedGames;
+let playedGames = Number(localStorage.getItem("playedGames"));
 let wantedcards, wantedpairsCustom, wantedpairsRadio;
 let color1, color2;
 let revealedCard1, revealedCard2;
@@ -135,13 +135,16 @@ function resetDraws() {
 }
 
 function saveHighscore() {
-    playedGames = Number(localStorage.getItem("playedGames"));
     playedGames = playedGames +1;
     localStorage.setItem("playedGames", playedGames);
     localStorage.setItem("timeGame" +playedGames, timer);
     localStorage.setItem("trysGame" +playedGames, trys);
     localStorage.setItem("pairsGame" +playedGames, wantedcards/2);
     localStorage.setItem("entry" +playedGames, playedGames);
+    loadScoreboard();
+}
+
+function loadScoreboard() {
     var scoreboardEntry = document.getElementsByClassName("scoreboardEntry");
     while (scoreboardEntry.firstChild) {
         scoreboardEntry.removeChild(scoreboardEntry.firstChild);
@@ -154,7 +157,6 @@ function saveHighscore() {
         const entry = document.createElement("div");
         entry.id = "scoreboardEntry" + l;
         entry.className = "scoreboardEntry";
-//        entry.innerHTML = "Du hast im " + l + ". Spiel " + localStorage.getItem("timeGame" +l) + " Sekunden und " + localStorage.getItem("trysGame" +l) + " Versuche für " + localStorage.getItem("pairsGame" +l) + " Paare gebraucht!";
         const entryNumber = document.createElement("div");
         entryNumber.id = "entryNumber" + l;
         entryNumber.className = "entryComponent";
