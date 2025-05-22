@@ -2,6 +2,7 @@ const CARD_CLASS = "card";
 const FLIPPED_CLASS = "flipped";
 const MATCHED_CLASS = "matched";
 const START_BUTTON = document.getElementById("startButton");
+const GAMEBOARD = document.getElementById("game-board");
 const FLIP_DELAY_MS = 1000;
 
 let gameState = {
@@ -23,19 +24,35 @@ let gameState = {
 }
 
 
-function createCards() {
-    gameState.selectedPairsCustomInput = document.getElementById("pairsCustom").value;
-    gameState.selectedPairsRadioInput = document.querySelector("input[name=difficultySelector]:checked").value;
-    if (gameState.selectedPairsCustomInput <= 0) {
-        gameState.totalPairsToFind = gameState.selectedPairsRadioInput;
-    } else {
-        gameState.totalPairsToFind = gameState.selectedPairsCustomInput;
-    }
-    var gameboard = document.getElementById("game-board");
-    while (gameboard.firstChild) {
-        gameboard.removeChild(gameboard.firstChild);
-    }
+function initiateGameRound() {
+    disableStartButton();
+    getSelectedPairs ();
+    clearGameboard();
+    generateCards();
     gameState.cardColorPairs = [];
+    GAMEBOARD.scrollIntoView({block: "center", behavior: "instant"})
+    gameState.pairsFound = 0;
+    gameState.currentTries = 0;
+    gameState.isPlaying = true;
+    gameState.currentTime = 0;
+    document.getElementById("tryCounter").innerHTML = "Versuche: " +gameState.currentTries;
+    randomColorGenerator();
+    shuffle();
+    startTimer();
+}
+
+function disableStartButton() {
+    START_BUTTON.disabled = "true";
+    START_BUTTON.style.opacity = 0.5;
+}
+
+function clearGameboard() {
+    while (GAMEBOARD.firstChild) {
+        GAMEBOARD.removeChild(GAMEBOARD.firstChild);
+    }
+}
+
+function generateCards() {
     for (let b = 0; b < gameState.totalPairsToFind*2; b++) {
         const CARD = document.createElement("div");
         CARD.id = "card" + b;
@@ -43,17 +60,16 @@ function createCards() {
         CARD.addEventListener("click", function(){revealCard("card" + b)});
         document.getElementById("game-board").appendChild(CARD);
     }
-    START_BUTTON.disabled = "true";
-    START_BUTTON.style.opacity = 0.5;
-    gameboard.scrollIntoView({block: "center", behavior: "instant"})
-    gameState.pairsFound = 0;
-    gameState.currentTries = 0;
-    document.getElementById("tryCounter").innerHTML = "Versuche: " +gameState.currentTries;
-    randomColorGenerator();
-    shuffle();
-    gameState.isPlaying = true;
-    gameState.currentTime = 0;
-    startTimer();
+}
+
+function getSelectedPairs() {
+    gameState.selectedPairsCustomInput = document.getElementById("pairsCustom").value;
+    gameState.selectedPairsRadioInput = document.querySelector("input[name=difficultySelector]:checked").value;
+    if (gameState.selectedPairsCustomInput <= 0) {
+        gameState.totalPairsToFind = gameState.selectedPairsRadioInput;
+    } else {
+        gameState.totalPairsToFind = gameState.selectedPairsCustomInput;
+    }
 }
 
 function randomColorGenerator () {
@@ -94,7 +110,7 @@ function revealCard(c) {
             gameState.secondClickedCard = CARD;
             if (gameState.firstClickedCardColor === gameState.secondClickedCardColor) {
                 setTimeout(
-                    removeCards,
+                    hideCards,
                     FLIP_DELAY_MS
                 )
             } else {
@@ -121,7 +137,7 @@ function startTimer() {
     }
 }
 
-function removeCards () {
+function hideCards () {
     gameState.firstClickedCard.className = "matched";
     gameState.secondClickedCard.className = "matched";
     gameState.pairsFound = gameState.pairsFound +1;
@@ -158,7 +174,7 @@ function loadScoreboard() {
     while (scoreboardEntry.firstChild) {
         scoreboardEntry.removeChild(scoreboardEntry.firstChild);
     }
-    var gameboard = document.getElementById("scoreboard");
+    var scoreboard = document.getElementById("scoreboard");
     while (scoreboard.firstChild) {
         scoreboard.removeChild(scoreboard.firstChild);
     }
