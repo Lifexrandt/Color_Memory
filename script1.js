@@ -1,100 +1,130 @@
-let state = 0;
-let draws = 0;
-let pairs = 0;
-let trys = 0;
-let timer = 0;
-let ingame = 0;
-let playedGames = Number(localStorage.getItem("playedGames"));
-let wantedcards, wantedpairsCustom, wantedpairsRadio;
-let color1, color2;
-let revealedCard1, revealedCard2;
-let cards = [];
-//const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"];
+const CARD_CLASS = "card";
+const FLIPPED_CLASS = "flipped";
+const MATCHED_CLASS = "matched";
+const START_BUTTON = document.getElementById("startButton");
+const GAMEBOARD = document.getElementById("game-board");
+const FLIP_DELAY_MS = 1000;
 
-function createCards() {
-    wantedpairsCustom = document.getElementById("pairsCustom").value;
-    wantedpairsRadio = document.querySelector("input[name=difficultySelector]:checked").value;
-    if (wantedpairsCustom == 0) {
-        wantedcards = wantedpairsRadio*2
-    } else {
-        wantedcards = wantedpairsCustom*2
-    }
-    var gameboard = document.getElementById("game-board");
-    while (gameboard.firstChild) {
-        gameboard.removeChild(gameboard.firstChild);
-    }
-    cards = [];
-    for (let b = 0; b < wantedcards; b++) {
-        const card = document.createElement("div");
-        card.id = "card" + b;
-        card.className = "card";
-        card.addEventListener("click", function(){revealCard("card" + b)});
-        document.getElementById("game-board").appendChild(card);
-    }
-    const pauseButton = document.getElementById("startButton");
-    pauseButton.disabled = "true";
-    pauseButton.style.opacity = 0.5;
-    gameboard.scrollIntoView({block: "center", behavior: "instant"})
-    pairs = 0;
-    trys = 0;
-    document.getElementById("tryCounter").innerHTML = "Versuche: " +trys;
-    randomColorGenerator();
-    shuffle();
-    ingame = 1;
-    timer = 0;
+let gameState = {
+    playedGamesCounter: Number(localStorage.getItem("playedGamesCounter")),
+    firstCardFlipped: false,
+    canClick: true,
+    pairsFound: 0,
+    isPlaying: false,
+    totalPairsToFind: 0,
+    selectedPairsCustomInput: 0,
+    selectedPairsRadioInput: 0,
+    currentTries: 0,
+    currentTime: 0,
+    firstClickedCard: 0,
+    secondClickedCard: 0,
+    firstClickedCardColor: 0,
+    secondClickedCardColor: 0,
+    cardColorPairs: [],
+}
+
+
+function initiateGameRound() { //Funktion zum Starten einer Spielrunde
+    disableStartButton();
+    getSelectedPairs ();
+    clearGameboard();
+    generateCards();
+    gameState.cardColorPairs = []; //Das Array mit allen Farbpaaren wird geleert
+    GAMEBOARD.scrollIntoView({block: "center", behavior: "instant"})
+    gameState.pairsFound = 0; //Ab hier werden erstmal alle relevanten Variablen zurückgesetzt
+    gameState.currentTries = 0;
+    gameState.isPlaying = true;
+    gameState.currentTime = 0;
+    document.getElementById("tryCounter").innerHTML = "Versuche: " +gameState.currentTries;
+    randomColorPairsGenerator();
+    shuffleCards();
+    assignColorsToCards();
     startTimer();
 }
 
-function randomColorGenerator () {
-    for (i = 0; i < wantedcards/2; i++) {
-        let f = '#' + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16);
-        cards.push(f, f);
+function disableStartButton() {
+    START_BUTTON.disabled = "true";
+    START_BUTTON.style.opacity = 0.5;
+}
+
+function clearGameboard() {
+    while (GAMEBOARD.firstChild) {
+        GAMEBOARD.removeChild(GAMEBOARD.firstChild);
     }
 }
 
-function shuffle() {
-    for (let i = cards.length -1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i+1));
-        let k = cards[i];
-        cards[i] = cards[j];
-        cards[j] = k;
+function generateCards() {
+    for (let b = 0; b < gameState.totalPairsToFind*2; b++) { //Wird sooft ausgeführt, wie es Karten geben soll
+        const CARD = document.createElement("div"); //Eine Karte wird erschaffen
+        CARD.id = "card" + b; //Die Karte erhält eine einzigartige ID
+        CARD.className = CARD_CLASS; //Die Karte wird der Karten-Klasse zugeordnet
+        CARD.addEventListener("click", function(){revealCard("card" + b)}); //Die Karte erhält einen Click-Event-Listener
+        document.getElementById("game-board").appendChild(CARD); //Die Karte wird dem Spielbrett zugeordnet
     }
-    for (let a = 0; a < wantedcards; a++) {
-        const currentCard = document.getElementById("card" + a);
-        currentCard.dataset.color = cards[a];
+}
+
+function getSelectedPairs() {
+    gameState.selectedPairsCustomInput = document.getElementById("pairsCustom").value;
+    gameState.selectedPairsRadioInput = document.querySelector("input[name=difficultySelector]:checked").value;
+    if (gameState.selectedPairsCustomInput <= 0) { //Wenn der Spieler keine Custom Kartenanzahl angibt, wird der Wert des Radiomenüs verwendet
+        gameState.totalPairsToFind = gameState.selectedPairsRadioInput;
+    } else { //Wenn der Spieler eine zugelassenen Custom Kartenzahl angibt, wird diese verwendet
+        gameState.totalPairsToFind = gameState.selectedPairsCustomInput;
+    }
+}
+
+function randomColorPairsGenerator () { 
+    for (i = 0; i < gameState.totalPairsToFind; i++) { //Es wird für jedes Kartenpaar eine Zufallsfarbe erstellt
+        let f = '#' + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16);
+        gameState.cardColorPairs.push(f, f); //Die Farbe wird zweifach ins Farbenarray gepusht (zweifach wegen zwei Karten pro Paar)
+    }
+}
+
+function shuffleCards() { //Die Farben im Farbenarray werden per Fisher-Yates Algorithmus gemischt
+    for (let i = gameState.cardColorPairs.length -1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i+1));
+        let k = gameState.cardColorPairs[i];
+        gameState.cardColorPairs[i] = gameState.cardColorPairs[j];
+        gameState.cardColorPairs[j] = k;
+    }
+}
+
+function assignColorsToCards() { //Jeder Karte wird eine Farbe aus dem Farbenarray zugeordnet
+    for (let a = 0; a < gameState.totalPairsToFind*2; a++) {
+        const CURRENT_CARD = document.getElementById("card" + a);
+        CURRENT_CARD.dataset.color = gameState.cardColorPairs[a];
     }
 }
 
 function revealCard(c) {
-    if (draws == 0) {
-        const card = document.getElementById(c);
-        const color = card.getAttribute("data-color");
-        console.log(color)
-        card.style.setProperty("--real-color", color);
-        card.className = "flipped";
-        if (state == 0) {
-            color1 = color;
-            revealedCard1 = card;
-            state = 1;
-        } else if (revealedCard1 == card) {
+    if (gameState.canClick == true) { //Wenn es erlaubt ist, eine Karte anzuklicken:
+        const CARD = document.getElementById(c); //Die angeklickte Karte wird zwischengespeichert
+        const COLOR = CARD.getAttribute("data-color"); //Die Farbe der Karte wird zwischengespeichert
+        CARD.style.setProperty("--real-color", COLOR); //Die CSS-Variable "--real-color" wird auf die Farbe der Karte gesetzt
+        CARD.className = "flipped"; //Die Klasse der Karte wird auf umgedreht gesetzt
+        if (gameState.firstCardFlipped == false) { //Wenn die Karte die erste Karte ist:
+            gameState.firstClickedCardColor = COLOR; //Die Farbe der Karte wird temporaer gespeichert
+            gameState.firstClickedCard = CARD; //Die Karte wird temporaer gespeichert
+            gameState.firstCardFlipped = true; //Es wird erkannt, dass nun die erste Karte gewählt wurde
+        } else if (gameState.firstClickedCard == CARD) { //Verhindert, dass nicht zweimal die gleiche Karte gewählt wird
 
-        } else {
-            draws = 1;
-            color2 = color;
-            revealedCard2 = card;
-            if (color1 === color2) {
-                setTimeout(
-                    removeCards,
-                    1000
+        } else { //Wenn die Karte die zweite Karte ist:
+            gameState.canClick = false; //Man kann nun keine weitere Karte wählen
+            gameState.secondClickedCardColor = COLOR; //Die Farbe der Karte wird temporaer gespeichert
+            gameState.secondClickedCard = CARD; //Die Karte wird temporaer gespeichert
+            if (gameState.firstClickedCardColor === gameState.secondClickedCardColor) { //Wenn beide Karten zusammenpassen (Gleiche Farbe):
+                setTimeout( //Nach kurzer Verzögerung werden beide Karten verschwinden
+                    hideCards,
+                    FLIP_DELAY_MS
                 )
-            } else {
-                setTimeout(
+            } else { //Wenn die Karten nicht zusammenpassen:
+                setTimeout( //Nach kurzer Verzögerung werden beide Karten wieder ins Spiel kommen
                     returnCards,
-                    1000
+                    FLIP_DELAY_MS
                 )
             }
-        trys = trys +1;
-        document.getElementById("tryCounter").innerHTML = "Versuche: " +trys;
+        gameState.currentTries = gameState.currentTries +1; //Die Versuche werden erhöht
+        document.getElementById("tryCounter").innerHTML = "Versuche: " +gameState.currentTries;
         setTimeout(
             resetDraws,
             1100
@@ -104,85 +134,84 @@ function revealCard(c) {
 }
 
 function startTimer() {
-    document.getElementById("timer").innerHTML = "Timer: " + timer + " Sekunden";
-    if (ingame == 1) {
-        timer = timer +1;
+    document.getElementById("timer").innerHTML = "Timer: " + gameState.currentTime + " Sekunden";
+    if (gameState.isPlaying == true) { //Wenn ein Spiel aktiv ist, zählt der Timer hoch
+        gameState.currentTime = gameState.currentTime +1;
         setTimeout(startTimer, 1000)
     }
 }
 
-function removeCards () {
-    revealedCard1.className = "matched";
-    revealedCard2.className = "matched";
-    pairs = pairs +1;
-    if (pairs == wantedcards/2) {
-        const pauseButton = document.getElementById("startButton");
-        pauseButton.removeAttribute("disabled");
-        pauseButton.style.opacity = 1;
+function hideCards () {
+    gameState.firstClickedCard.className = "matched"; //Die erste gefundene Karte wird versteckt
+    gameState.secondClickedCard.className = "matched"; //Die zweite gefundene Karte wird versteckt
+    gameState.pairsFound = gameState.pairsFound +1; //Der Counter für gefundene Paare geht hoch
+    if (gameState.pairsFound == gameState.totalPairsToFind) { //Wenn alle Paare gefunden wurden, wird alles für eine nächste Runde vorbereitet
+        START_BUTTON.removeAttribute("disabled");
+        START_BUTTON.style.opacity = 1;
         saveHighscore()
-        ingame = 0;
+        gameState.isPlaying = false;
     }
 }
 
 function returnCards () {
-    revealedCard1.className = "card";
-    revealedCard2.className = "card";
+    gameState.firstClickedCard.className = "card";
+    gameState.secondClickedCard.className = "card";
 }
 
-function resetDraws() {
-    state = 0;
-    draws = 0;
+function resetDraws() { //Ein nächster Versuch wird zugelassen
+    gameState.firstCardFlipped = false;
+    gameState.canClick = true;
 }
 
-function saveHighscore() {
-    playedGames = playedGames +1;
-    localStorage.setItem("playedGames", playedGames);
-    localStorage.setItem("timeGame" +playedGames, timer);
-    localStorage.setItem("trysGame" +playedGames, trys);
-    localStorage.setItem("pairsGame" +playedGames, wantedcards/2);
-    localStorage.setItem("entry" +playedGames, playedGames);
+function saveHighscore() { //Alle Rundendaten werden in LocalStorage mit einzigartiger ID geschrieben
+    gameState.playedGamesCounter = gameState.playedGamesCounter +1;
+    localStorage.setItem("playedGamesCounter", gameState.playedGamesCounter);
+    localStorage.setItem("timeGame" +gameState.playedGamesCounter, gameState.currentTime);
+    localStorage.setItem("triesGame" +gameState.playedGamesCounter, gameState.currentTries);
+    localStorage.setItem("pairsGame" +gameState.playedGamesCounter, gameState.totalPairsToFind);
+    localStorage.setItem("entry" +gameState.playedGamesCounter, gameState.playedGamesCounter);
     loadScoreboard();
 }
 
 function loadScoreboard() {
-    var scoreboardEntry = document.getElementsByClassName("scoreboardEntry");
+    var scoreboardEntry = document.getElementsByClassName("scoreboardEntry"); //Zuerst wird das Scoreboard zurückgesetzt
     while (scoreboardEntry.firstChild) {
         scoreboardEntry.removeChild(scoreboardEntry.firstChild);
     }
-    var gameboard = document.getElementById("scoreboard");
+    var scoreboard = document.getElementById("scoreboard");
     while (scoreboard.firstChild) {
         scoreboard.removeChild(scoreboard.firstChild);
     }
-    for (l = 1; l <= playedGames; l++) {
-        const entry = document.createElement("div");
-        entry.id = "scoreboardEntry" + l;
-        entry.className = "scoreboardEntry";
-        const entryNumber = document.createElement("div");
-        entryNumber.id = "entryNumber" + l;
-        entryNumber.className = "entryComponent";
-        entryNumber.innerHTML = l + ".";
-        const entryTime = document.createElement("div");
-        entryTime.id = "entryTime" + l;
-        entryTime.className = "entryComponent";
-        entryTime.innerHTML = "Zeit: " + localStorage.getItem("timeGame" +l) + "s";
-        const entryTrys = document.createElement("div");
-        entryTrys.id = "entryTrys" + l;
-        entryTrys.className = "entryComponent";
-        entryTrys.innerHTML = "Versuche: " + localStorage.getItem("trysGame" +l);
-        const entryPairs = document.createElement("div");
-        entryPairs.id = "entryPairs" + l;
-        entryPairs.className = "entryComponent";
-        entryPairs.innerHTML = "Paare: " + localStorage.getItem("pairsGame" +l);
-        document.getElementById("scoreboard").appendChild(entry);
-        document.getElementById("scoreboardEntry" +l).appendChild(entryNumber);
-        document.getElementById("scoreboardEntry" +l).appendChild(entryTime);
-        document.getElementById("scoreboardEntry" +l).appendChild(entryTrys);
-        document.getElementById("scoreboardEntry" +l).appendChild(entryPairs);
+    for (l = 1; l <= gameState.playedGamesCounter; l++) { //Nun werden für jedes Spiel alle Werte zusammengetragen und angezeigt
+        const ENTRY = document.createElement("div");
+        ENTRY.id = "scoreboardEntry" + l;
+        ENTRY.className = "scoreboardEntry";
+        const ENTRY_NUMBER = document.createElement("div");
+        ENTRY_NUMBER.id = "entryNumber" + l;
+        ENTRY_NUMBER.className = "entryComponent";
+        ENTRY_NUMBER.innerHTML = l + ".";
+        const ENTRY_TIME = document.createElement("div");
+        ENTRY_TIME.id = "entryTime" + l;
+        ENTRY_TIME.className = "entryComponent";
+        ENTRY_TIME.innerHTML = "Zeit: " + localStorage.getItem("timeGame" +l) + "s";
+        const ENTRY_TRIES = document.createElement("div");
+        ENTRY_TRIES.id = "entryTries" + l;
+        ENTRY_TRIES.className = "entryComponent";
+        ENTRY_TRIES.innerHTML = "Versuche: " + localStorage.getItem("triesGame" +l);
+        const ENTRY_PAIRS = document.createElement("div");
+        ENTRY_PAIRS.id = "entryPairs" + l;
+        ENTRY_PAIRS.className = "entryComponent";
+        ENTRY_PAIRS.innerHTML = "Paare: " + localStorage.getItem("pairsGame" +l);
+        document.getElementById("scoreboard").appendChild(ENTRY);
+        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_NUMBER);
+        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_TIME);
+        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_TRIES);
+        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_PAIRS);
     }
 }
 
 function resetScoreboard() {
     localStorage.clear();
-    playedGames = 0;
+    gameState.playedGamesCounter = 0;
     loadScoreboard();
 }
