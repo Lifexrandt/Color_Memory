@@ -180,3 +180,9 @@ function loadScoreboard() {
         document.getElementById("scoreboardEntry" +l).appendChild(entryPairs);
     }
 }
+
+function resetScoreboard() {
+    localStorage.clear();
+    playedGames = 0;
+    loadScoreboard();
+}

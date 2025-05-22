@@ -128,7 +128,7 @@
     padding: 20px;
 }
 
-#startButton {
+.button {
     background-color: dimgray;
     border-style: hidden;
   	border-radius: 8px;
