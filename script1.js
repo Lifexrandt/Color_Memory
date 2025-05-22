@@ -47,7 +47,7 @@ function createCards() {
 
 function randomColorGenerator () {
     for (i = 0; i < wantedcards/2; i++) {
-        let f = '#' + Math.floor(Math.random()*16777215).toString(16);
+        let f = '#' + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16);
         cards.push(f, f);
     }
 }
@@ -66,10 +66,10 @@ function shuffle() {
 }
 
 function revealCard(c) {
-    console.log(ingame)
     if (draws == 0) {
         const card = document.getElementById(c);
         const color = card.getAttribute("data-color");
+        console.log(color)
         card.style.setProperty("--real-color", color);
         card.className = "flipped";
         if (state == 0) {
