@@ -1,30 +1,36 @@
-let state = 0;
-let draws = 0;
-let pairs = 0;
-let trys = 0;
-let timer = 0;
-let ingame = 0;
-let playedGames = Number(localStorage.getItem("playedGames"));
-let wantedcards, wantedpairsCustom, wantedpairsRadio;
-let color1, color2;
-let revealedCard1, revealedCard2;
-let cards = [];
-//const cards = ["red", "red", "blue", "blue", "yellow", "yellow", "lime", "lime", "black", "black", "white", "white"];
+let gameState = {
+    playedGamesCounter: Number(localStorage.getItem("playedGamesCounter")),
+    firstCardFlipped: false,
+    canClick: true,
+    pairsFound: 0,
+    isPlaying: false,
+    totalPairsToFind: 0,
+    selectedPairsCustomInput: 0,
+    selectedPairsRadioInput: 0,
+    currentTries: 0,
+    currentTime: 0,
+    firstClickedCard: 0,
+    secondClickedCard: 0,
+    firstClickedCardColor: 0,
+    secondClickedCardColor: 0,
+    cardColorPairs: [],
+}
+
 
 function createCards() {
-    wantedpairsCustom = document.getElementById("pairsCustom").value;
-    wantedpairsRadio = document.querySelector("input[name=difficultySelector]:checked").value;
-    if (wantedpairsCustom == 0) {
-        wantedcards = wantedpairsRadio*2
+    gameState.selectedPairsCustomInput = document.getElementById("pairsCustom").value;
+    gameState.selectedPairsRadioInput = document.querySelector("input[name=difficultySelector]:checked").value;
+    if (gameState.selectedPairsCustomInput <= 0) {
+        gameState.totalPairsToFind = gameState.selectedPairsRadioInput;
     } else {
-        wantedcards = wantedpairsCustom*2
+        gameState.totalPairsToFind = gameState.selectedPairsCustomInput;
     }
     var gameboard = document.getElementById("game-board");
     while (gameboard.firstChild) {
         gameboard.removeChild(gameboard.firstChild);
     }
-    cards = [];
-    for (let b = 0; b < wantedcards; b++) {
+    gameState.cardColorPairs = [];
+    for (let b = 0; b < gameState.totalPairsToFind*2; b++) {
         const card = document.createElement("div");
         card.id = "card" + b;
         card.className = "card";
@@ -35,54 +41,54 @@ function createCards() {
     pauseButton.disabled = "true";
     pauseButton.style.opacity = 0.5;
     gameboard.scrollIntoView({block: "center", behavior: "instant"})
-    pairs = 0;
-    trys = 0;
-    document.getElementById("tryCounter").innerHTML = "Versuche: " +trys;
+    gameState.pairsFound = 0;
+    gameState.currentTries = 0;
+    document.getElementById("tryCounter").innerHTML = "Versuche: " +gameState.currentTries;
     randomColorGenerator();
     shuffle();
-    ingame = 1;
-    timer = 0;
+    gameState.isPlaying = true;
+    gameState.currentTime = 0;
     startTimer();
 }
 
 function randomColorGenerator () {
-    for (i = 0; i < wantedcards/2; i++) {
+    for (i = 0; i < gameState.totalPairsToFind; i++) {
         let f = '#' + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16);
-        cards.push(f, f);
+        gameState.cardColorPairs.push(f, f);
     }
 }
 
 function shuffle() {
-    for (let i = cards.length -1; i > 0; i--) {
+    for (let i = gameState.cardColorPairs.length -1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i+1));
-        let k = cards[i];
-        cards[i] = cards[j];
-        cards[j] = k;
+        let k = gameState.cardColorPairs[i];
+        gameState.cardColorPairs[i] = gameState.cardColorPairs[j];
+        gameState.cardColorPairs[j] = k;
     }
-    for (let a = 0; a < wantedcards; a++) {
+    for (let a = 0; a < gameState.totalPairsToFind*2; a++) {
         const currentCard = document.getElementById("card" + a);
-        currentCard.dataset.color = cards[a];
+        currentCard.dataset.color = gameState.cardColorPairs[a];
     }
 }
 
 function revealCard(c) {
-    if (draws == 0) {
+    if (gameState.canClick == true) {
         const card = document.getElementById(c);
         const color = card.getAttribute("data-color");
         console.log(color)
         card.style.setProperty("--real-color", color);
         card.className = "flipped";
-        if (state == 0) {
-            color1 = color;
-            revealedCard1 = card;
-            state = 1;
-        } else if (revealedCard1 == card) {
+        if (gameState.firstCardFlipped == false) {
+            gameState.firstClickedCardColor = color;
+            gameState.firstClickedCard = card;
+            gameState.firstCardFlipped = true;
+        } else if (gameState.firstClickedCard == card) {
 
         } else {
-            draws = 1;
-            color2 = color;
-            revealedCard2 = card;
-            if (color1 === color2) {
+            gameState.canClick = false;
+            gameState.secondClickedCardColor = color;
+            gameState.secondClickedCard = card;
+            if (gameState.firstClickedCardColor === gameState.secondClickedCardColor) {
                 setTimeout(
                     removeCards,
                     1000
@@ -93,8 +99,8 @@ function revealCard(c) {
                     1000
                 )
             }
-        trys = trys +1;
-        document.getElementById("tryCounter").innerHTML = "Versuche: " +trys;
+        gameState.currentTries = gameState.currentTries +1;
+        document.getElementById("tryCounter").innerHTML = "Versuche: " +gameState.currentTries;
         setTimeout(
             resetDraws,
             1100
@@ -104,43 +110,43 @@ function revealCard(c) {
 }
 
 function startTimer() {
-    document.getElementById("timer").innerHTML = "Timer: " + timer + " Sekunden";
-    if (ingame == 1) {
-        timer = timer +1;
+    document.getElementById("timer").innerHTML = "Timer: " + gameState.currentTime + " Sekunden";
+    if (gameState.isPlaying == true) {
+        gameState.currentTime = gameState.currentTime +1;
         setTimeout(startTimer, 1000)
     }
 }
 
 function removeCards () {
-    revealedCard1.className = "matched";
-    revealedCard2.className = "matched";
-    pairs = pairs +1;
-    if (pairs == wantedcards/2) {
+    gameState.firstClickedCard.className = "matched";
+    gameState.secondClickedCard.className = "matched";
+    gameState.pairsFound = gameState.pairsFound +1;
+    if (gameState.pairsFound == gameState.totalPairsToFind) {
         const pauseButton = document.getElementById("startButton");
         pauseButton.removeAttribute("disabled");
         pauseButton.style.opacity = 1;
         saveHighscore()
-        ingame = 0;
+        gameState.isPlaying = false;
     }
 }
 
 function returnCards () {
-    revealedCard1.className = "card";
-    revealedCard2.className = "card";
+    gameState.firstClickedCard.className = "card";
+    gameState.secondClickedCard.className = "card";
 }
 
 function resetDraws() {
-    state = 0;
-    draws = 0;
+    gameState.firstCardFlipped = false;
+    gameState.canClick = true;
 }
 
 function saveHighscore() {
-    playedGames = playedGames +1;
-    localStorage.setItem("playedGames", playedGames);
-    localStorage.setItem("timeGame" +playedGames, timer);
-    localStorage.setItem("trysGame" +playedGames, trys);
-    localStorage.setItem("pairsGame" +playedGames, wantedcards/2);
-    localStorage.setItem("entry" +playedGames, playedGames);
+    gameState.playedGamesCounter = gameState.playedGamesCounter +1;
+    localStorage.setItem("playedGamesCounter", gameState.playedGamesCounter);
+    localStorage.setItem("timeGame" +gameState.playedGamesCounter, gameState.currentTime);
+    localStorage.setItem("trysGame" +gameState.playedGamesCounter, gameState.currentTries);
+    localStorage.setItem("pairsGame" +gameState.playedGamesCounter, gameState.totalPairsToFind);
+    localStorage.setItem("entry" +gameState.playedGamesCounter, gameState.playedGamesCounter);
     loadScoreboard();
 }
 
@@ -153,7 +159,7 @@ function loadScoreboard() {
     while (scoreboard.firstChild) {
         scoreboard.removeChild(scoreboard.firstChild);
     }
-    for (l = 1; l <= playedGames; l++) {
+    for (l = 1; l <= gameState.playedGamesCounter; l++) {
         const entry = document.createElement("div");
         entry.id = "scoreboardEntry" + l;
         entry.className = "scoreboardEntry";
@@ -183,6 +189,6 @@ function loadScoreboard() {
 
 function resetScoreboard() {
     localStorage.clear();
-    playedGames = 0;
+    gameState.playedGamesCounter = 0;
     loadScoreboard();
 }
