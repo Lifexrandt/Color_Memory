@@ -4,25 +4,33 @@ const MATCHED_CLASS = "matched";
 const START_BUTTON = document.getElementById("startButton");
 const GAMEBOARD = document.getElementById("game-board");
 const FLIP_DELAY_MS = 1000;
+const NEXT_TRY_DELAY_MS = 1000;
 
 let gameState = {
     playedGamesCounter: Number(localStorage.getItem("playedGamesCounter")),
     firstCardFlipped: false,
     canClick: true,
+    isPlaying: false,    
     pairsFound: 0,
-    isPlaying: false,
     totalPairsToFind: 0,
     selectedPairsCustomInput: 0,
     selectedPairsRadioInput: 0,
     currentTries: 0,
     currentTime: 0,
-    firstClickedCard: 0,
-    secondClickedCard: 0,
-    firstClickedCardColor: 0,
-    secondClickedCardColor: 0,
+    firstClickedCard: "",
+    secondClickedCard: "",
+    firstClickedCardColor: "",
+    secondClickedCardColor: "",
     cardColorPairs: [],
+    memoryScoreboard: [],
 }
 
+const SCOREBOARD_ENTRY = {
+    id: 0,
+    time: 0,
+    tries: 0,
+    pairs: 0
+}
 
 function initiateGameRound() { //Funktion zum Starten einer Spielrunde
     disableStartButton();
@@ -44,7 +52,17 @@ function initiateGameRound() { //Funktion zum Starten einer Spielrunde
 
 function disableStartButton() {
     START_BUTTON.disabled = "true";
-    START_BUTTON.style.opacity = 0.5;
+    START_BUTTON.style.opacity = "0.5";
+}
+
+function getSelectedPairs() {
+    gameState.selectedPairsCustomInput = document.getElementById("pairsCustom").value;
+    gameState.selectedPairsRadioInput = document.querySelector("input[name=difficultySelector]:checked").value;
+    if (gameState.selectedPairsCustomInput <= 0) { //Wenn der Spieler keine Custom Kartenanzahl angibt, wird der Wert des Radiomenüs verwendet
+        gameState.totalPairsToFind = gameState.selectedPairsRadioInput;
+    } else { //Wenn der Spieler eine zugelassenen Custom Kartenzahl angibt, wird diese verwendet
+        gameState.totalPairsToFind = gameState.selectedPairsCustomInput;
+    }
 }
 
 function clearGameboard() {
@@ -63,19 +81,12 @@ function generateCards() {
     }
 }
 
-function getSelectedPairs() {
-    gameState.selectedPairsCustomInput = document.getElementById("pairsCustom").value;
-    gameState.selectedPairsRadioInput = document.querySelector("input[name=difficultySelector]:checked").value;
-    if (gameState.selectedPairsCustomInput <= 0) { //Wenn der Spieler keine Custom Kartenanzahl angibt, wird der Wert des Radiomenüs verwendet
-        gameState.totalPairsToFind = gameState.selectedPairsRadioInput;
-    } else { //Wenn der Spieler eine zugelassenen Custom Kartenzahl angibt, wird diese verwendet
-        gameState.totalPairsToFind = gameState.selectedPairsCustomInput;
-    }
-}
-
 function randomColorPairsGenerator () { 
-    for (i = 0; i < gameState.totalPairsToFind; i++) { //Es wird für jedes Kartenpaar eine Zufallsfarbe erstellt
-        let f = '#' + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16) + Math.floor(Math.random()*15).toString(16);
+    for (let i = 0; i < gameState.totalPairsToFind; i++) { //Es wird für jedes Kartenpaar eine Zufallsfarbe erstellt
+        let f = "#"
+        for (let a = 0; a < 6; a++) {
+            f = f + Math.floor(Math.random()*15).toString(16);
+        }
         gameState.cardColorPairs.push(f, f); //Die Farbe wird zweifach ins Farbenarray gepusht (zweifach wegen zwei Karten pro Paar)
     }
 }
@@ -97,16 +108,16 @@ function assignColorsToCards() { //Jeder Karte wird eine Farbe aus dem Farbenarr
 }
 
 function revealCard(c) {
-    if (gameState.canClick == true) { //Wenn es erlaubt ist, eine Karte anzuklicken:
+    if (gameState.canClick) { //Wenn es erlaubt ist, eine Karte anzuklicken:
         const CARD = document.getElementById(c); //Die angeklickte Karte wird zwischengespeichert
         const COLOR = CARD.getAttribute("data-color"); //Die Farbe der Karte wird zwischengespeichert
         CARD.style.setProperty("--real-color", COLOR); //Die CSS-Variable "--real-color" wird auf die Farbe der Karte gesetzt
-        CARD.className = "flipped"; //Die Klasse der Karte wird auf umgedreht gesetzt
+        CARD.className = FLIPPED_CLASS; //Die Klasse der Karte wird auf umgedreht gesetzt
         if (gameState.firstCardFlipped == false) { //Wenn die Karte die erste Karte ist:
             gameState.firstClickedCardColor = COLOR; //Die Farbe der Karte wird temporaer gespeichert
             gameState.firstClickedCard = CARD; //Die Karte wird temporaer gespeichert
             gameState.firstCardFlipped = true; //Es wird erkannt, dass nun die erste Karte gewählt wurde
-        } else if (gameState.firstClickedCard == CARD) { //Verhindert, dass nicht zweimal die gleiche Karte gewählt wird
+        } else if (gameState.firstClickedCard === CARD) { //Verhindert, dass nicht zweimal die gleiche Karte gewählt wird
 
         } else { //Wenn die Karte die zweite Karte ist:
             gameState.canClick = false; //Man kann nun keine weitere Karte wählen
@@ -126,8 +137,8 @@ function revealCard(c) {
         gameState.currentTries = gameState.currentTries +1; //Die Versuche werden erhöht
         document.getElementById("tryCounter").innerHTML = "Versuche: " +gameState.currentTries;
         setTimeout(
-            resetDraws,
-            1100
+            allowNextTry,
+            NEXT_TRY_DELAY_MS
         )
         }
     }
@@ -135,35 +146,63 @@ function revealCard(c) {
 
 function startTimer() {
     document.getElementById("timer").innerHTML = "Timer: " + gameState.currentTime + " Sekunden";
-    if (gameState.isPlaying == true) { //Wenn ein Spiel aktiv ist, zählt der Timer hoch
+    if (gameState.isPlaying) { //Wenn ein Spiel aktiv ist, zählt der Timer hoch
         gameState.currentTime = gameState.currentTime +1;
         setTimeout(startTimer, 1000)
     }
 }
 
 function hideCards () {
-    gameState.firstClickedCard.className = "matched"; //Die erste gefundene Karte wird versteckt
-    gameState.secondClickedCard.className = "matched"; //Die zweite gefundene Karte wird versteckt
+    gameState.firstClickedCard.className = MATCHED_CLASS; //Die erste gefundene Karte wird versteckt
+    gameState.secondClickedCard.className = MATCHED_CLASS; //Die zweite gefundene Karte wird versteckt
     gameState.pairsFound = gameState.pairsFound +1; //Der Counter für gefundene Paare geht hoch
     if (gameState.pairsFound == gameState.totalPairsToFind) { //Wenn alle Paare gefunden wurden, wird alles für eine nächste Runde vorbereitet
         START_BUTTON.removeAttribute("disabled");
-        START_BUTTON.style.opacity = 1;
-        saveHighscore()
+        START_BUTTON.style.opacity = "1";
+        saveHighscore();
         gameState.isPlaying = false;
     }
 }
 
 function returnCards () {
-    gameState.firstClickedCard.className = "card";
-    gameState.secondClickedCard.className = "card";
+    gameState.firstClickedCard.className = CARD_CLASS;
+    gameState.secondClickedCard.className = CARD_CLASS;
 }
 
-function resetDraws() { //Ein nächster Versuch wird zugelassen
+function allowNextTry() { //Ein nächster Versuch wird zugelassen
     gameState.firstCardFlipped = false;
     gameState.canClick = true;
 }
 
-function saveHighscore() { //Alle Rundendaten werden in LocalStorage mit einzigartiger ID geschrieben
+function saveHighscore() {
+    gameState.playedGamesCounter = gameState.playedGamesCounter +1;
+    localStorage.setItem("playedGamesCounter", gameState.playedGamesCounter);
+    const NEW_ENTRY = Object.create(SCOREBOARD_ENTRY);
+    NEW_ENTRY.id = gameState.playedGamesCounter;
+    NEW_ENTRY.pairs = Number(gameState.totalPairsToFind);
+    NEW_ENTRY.tries = gameState.currentTries;
+    NEW_ENTRY.time = gameState.currentTime;
+    console.log(NEW_ENTRY);
+    gameState.memoryScoreboard.push(NEW_ENTRY);
+    gameState.memoryScoreboard.sort((a, b) => a.tries - b.tries);
+    console.log(gameState.memoryScoreboard);
+    localStorage.setItem("memoryScoreboard", JSON.stringify(gameState.memoryScoreboard));
+    loadScoreboard();
+}
+
+function loadScoreboard() {
+    const scoreboard = document.getElementById("scoreboard");
+    while (scoreboard.firstChild) {
+        scoreboard.removeChild(scoreboard.firstChild);
+    }
+    let loadedScoreboard = JSON.parse(localStorage.getItem("memoryScoreboard")).slice(0, 10);
+    let loadedScoreboardLengt = loadScoreboard.length;
+    for (let i = 0; i < loadedScoreboardLengt; i++) {
+        scoreboard.appendChild(loadedScoreboard[i]);
+    }
+}
+
+/* function saveHighscore() { //Alle Rundendaten werden in LocalStorage mit einzigartiger ID geschrieben
     gameState.playedGamesCounter = gameState.playedGamesCounter +1;
     localStorage.setItem("playedGamesCounter", gameState.playedGamesCounter);
     localStorage.setItem("timeGame" +gameState.playedGamesCounter, gameState.currentTime);
@@ -214,4 +253,4 @@ function resetScoreboard() {
     localStorage.clear();
     gameState.playedGamesCounter = 0;
     loadScoreboard();
-}
+} */

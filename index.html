@@ -10,21 +10,21 @@
     </head>
 
     <body onload="loadScoreboard()">
-        <h1 id="headline">Farbmemory Spiel</h1>
-        <div id="gamestats">
+        <h1 class="headline">Farbmemory Spiel</h1>
+        <div class="gamestats">
             <div id="tryCounter"></div>
             <div id="timer"></div>
         </div>
         <div class="container" id="game-board"></div>
-        <div id="diffSelectorText">Mit wie vielen Paaren möchtest du spielen?</div><br>
-        <div id="pairSelectorFlexbox">
+        <div class="diffSelectorText">Mit wie vielen Paaren möchtest du spielen?</div><br>
+        <div class="pairSelectorFlexbox">
             <div>
                 <label for="diffEasy">Leicht (3 Paare)</label>
-                <input type="radio" id="diffEasy" name="difficultySelector" value="3" />
+                <input type="radio" id="diffEasy" name="difficultySelector" value="3" checked/>
             </div>
             <div>
                 <label for="diffEasy">Mittel (6 Paare)</label>
-                <input type="radio" id="diffEasy" name="difficultySelector" value="6" />
+                <input type="radio" id="diffMedium" name="difficultySelector" value="6" />
             </div>
             <div>
                 <label for="diffHard">Schwierig (10 Paare)</label>
@@ -38,10 +38,10 @@
         <br><br>
         <button onClick="initiateGameRound()" id="startButton" class="button">Spiel starten!</button>       
         <br><br>
-        <div id="scoreboardText">Scoreboard:</div>
+        <div class="scoreboardText">Scoreboard:</div>
         <div id="scoreboard"></div>
         <br><br>
         <button onClick="resetScoreboard()" id="scoreboardResetButton" class="button">Scoreboard zurücksetzen!</button>
-        <script src="script1.js"></script>
+        <script src="script.js"></script>
     </body>
 </html>
