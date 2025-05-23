@@ -161,8 +161,16 @@
     padding: 20px;
 }
 
+#scoreboard {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 .scoreboardText {
     text-align: center;
+    padding-bottom: 20px;
 }
 
 .scoreboardEntry {

@@ -1,6 +1,7 @@
 const CARD_CLASS = "card";
 const FLIPPED_CLASS = "flipped";
 const MATCHED_CLASS = "matched";
+const ENTRY_COMPONENT_CLASS = "entryComponent";
 const START_BUTTON = document.getElementById("startButton");
 const GAMEBOARD = document.getElementById("game-board");
 const FLIP_DELAY_MS = 1000;
@@ -124,22 +125,13 @@ function revealCard(c) {
             gameState.secondClickedCardColor = COLOR; //Die Farbe der Karte wird temporaer gespeichert
             gameState.secondClickedCard = CARD; //Die Karte wird temporaer gespeichert
             if (gameState.firstClickedCardColor === gameState.secondClickedCardColor) { //Wenn beide Karten zusammenpassen (Gleiche Farbe):
-                setTimeout( //Nach kurzer Verzögerung werden beide Karten verschwinden
-                    hideCards,
-                    FLIP_DELAY_MS
-                )
+                setTimeout(hideCards, FLIP_DELAY_MS) //Nach kurzer Verzögerung werden beide Karten verschwinden
             } else { //Wenn die Karten nicht zusammenpassen:
-                setTimeout( //Nach kurzer Verzögerung werden beide Karten wieder ins Spiel kommen
-                    returnCards,
-                    FLIP_DELAY_MS
-                )
+                setTimeout(returnCards, FLIP_DELAY_MS) //Nach kurzer Verzögerung werden beide Karten wieder ins Spiel kommen
             }
         gameState.currentTries = gameState.currentTries +1; //Die Versuche werden erhöht
         document.getElementById("tryCounter").innerHTML = "Versuche: " +gameState.currentTries;
-        setTimeout(
-            allowNextTry,
-            NEXT_TRY_DELAY_MS
-        )
+        setTimeout(allowNextTry, NEXT_TRY_DELAY_MS)
         }
     }
 }
@@ -157,11 +149,15 @@ function hideCards () {
     gameState.secondClickedCard.className = MATCHED_CLASS; //Die zweite gefundene Karte wird versteckt
     gameState.pairsFound = gameState.pairsFound +1; //Der Counter für gefundene Paare geht hoch
     if (gameState.pairsFound == gameState.totalPairsToFind) { //Wenn alle Paare gefunden wurden, wird alles für eine nächste Runde vorbereitet
-        START_BUTTON.removeAttribute("disabled");
-        START_BUTTON.style.opacity = "1";
+        setTimeout(enableStartButton, 1000)
         saveHighscore();
         gameState.isPlaying = false;
     }
+}
+
+function enableStartButton() {
+    START_BUTTON.removeAttribute("disabled");
+    START_BUTTON.style.opacity = "1";
 }
 
 function returnCards () {
@@ -175,6 +171,7 @@ function allowNextTry() { //Ein nächster Versuch wird zugelassen
 }
 
 function saveHighscore() {
+    gameState.memoryScoreboard = JSON.parse(localStorage.getItem("memoryScoreboard") ?? "[]");
     gameState.playedGamesCounter = gameState.playedGamesCounter +1;
     localStorage.setItem("playedGamesCounter", gameState.playedGamesCounter);
     const NEW_ENTRY = Object.create(SCOREBOARD_ENTRY);
@@ -182,75 +179,51 @@ function saveHighscore() {
     NEW_ENTRY.pairs = Number(gameState.totalPairsToFind);
     NEW_ENTRY.tries = gameState.currentTries;
     NEW_ENTRY.time = gameState.currentTime;
-    console.log(NEW_ENTRY);
     gameState.memoryScoreboard.push(NEW_ENTRY);
     gameState.memoryScoreboard.sort((a, b) => a.tries - b.tries);
-    console.log(gameState.memoryScoreboard);
     localStorage.setItem("memoryScoreboard", JSON.stringify(gameState.memoryScoreboard));
     loadScoreboard();
 }
 
 function loadScoreboard() {
+    const scoreboardEntry = document.getElementsByClassName("scoreboardEntry");
+    while (scoreboardEntry.firstChild) {
+        scoreboardEntry.removeChild(scoreboardEntry.firstChild);
+    }
     const scoreboard = document.getElementById("scoreboard");
     while (scoreboard.firstChild) {
         scoreboard.removeChild(scoreboard.firstChild);
     }
-    let loadedScoreboard = JSON.parse(localStorage.getItem("memoryScoreboard")).slice(0, 10);
-    let loadedScoreboardLengt = loadScoreboard.length;
-    for (let i = 0; i < loadedScoreboardLengt; i++) {
-        scoreboard.appendChild(loadedScoreboard[i]);
-    }
-}
-
-/* function saveHighscore() { //Alle Rundendaten werden in LocalStorage mit einzigartiger ID geschrieben
-    gameState.playedGamesCounter = gameState.playedGamesCounter +1;
-    localStorage.setItem("playedGamesCounter", gameState.playedGamesCounter);
-    localStorage.setItem("timeGame" +gameState.playedGamesCounter, gameState.currentTime);
-    localStorage.setItem("triesGame" +gameState.playedGamesCounter, gameState.currentTries);
-    localStorage.setItem("pairsGame" +gameState.playedGamesCounter, gameState.totalPairsToFind);
-    localStorage.setItem("entry" +gameState.playedGamesCounter, gameState.playedGamesCounter);
-    loadScoreboard();
-}
-
-function loadScoreboard() {
-    var scoreboardEntry = document.getElementsByClassName("scoreboardEntry"); //Zuerst wird das Scoreboard zurückgesetzt
-    while (scoreboardEntry.firstChild) {
-        scoreboardEntry.removeChild(scoreboardEntry.firstChild);
-    }
-    var scoreboard = document.getElementById("scoreboard");
-    while (scoreboard.firstChild) {
-        scoreboard.removeChild(scoreboard.firstChild);
-    }
-    for (l = 1; l <= gameState.playedGamesCounter; l++) { //Nun werden für jedes Spiel alle Werte zusammengetragen und angezeigt
-        const ENTRY = document.createElement("div");
-        ENTRY.id = "scoreboardEntry" + l;
-        ENTRY.className = "scoreboardEntry";
-        const ENTRY_NUMBER = document.createElement("div");
-        ENTRY_NUMBER.id = "entryNumber" + l;
-        ENTRY_NUMBER.className = "entryComponent";
-        ENTRY_NUMBER.innerHTML = l + ".";
-        const ENTRY_TIME = document.createElement("div");
-        ENTRY_TIME.id = "entryTime" + l;
-        ENTRY_TIME.className = "entryComponent";
-        ENTRY_TIME.innerHTML = "Zeit: " + localStorage.getItem("timeGame" +l) + "s";
-        const ENTRY_TRIES = document.createElement("div");
-        ENTRY_TRIES.id = "entryTries" + l;
-        ENTRY_TRIES.className = "entryComponent";
-        ENTRY_TRIES.innerHTML = "Versuche: " + localStorage.getItem("triesGame" +l);
-        const ENTRY_PAIRS = document.createElement("div");
-        ENTRY_PAIRS.id = "entryPairs" + l;
-        ENTRY_PAIRS.className = "entryComponent";
-        ENTRY_PAIRS.innerHTML = "Paare: " + localStorage.getItem("pairsGame" +l);
-        document.getElementById("scoreboard").appendChild(ENTRY);
-        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_NUMBER);
-        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_TIME);
-        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_TRIES);
-        document.getElementById("scoreboardEntry" +l).appendChild(ENTRY_PAIRS);
+    let loadedScoreboard = JSON.parse(localStorage.getItem("memoryScoreboard") ?? "[]").slice(0, 10);
+    let loadedScoreboardLenght = loadedScoreboard.length;
+    for (let i = 0; i < loadedScoreboardLenght; i++) {
+        const newEntry = document.createElement("div");
+        newEntry.id = "scoreboardEntry" + i;
+        newEntry.className = "scoreboardEntry";
+        const newEntryTries = document.createElement("div");
+        newEntryTries.innerHTML = "Versuche: " + loadedScoreboard[i].tries;
+        newEntryTries.className = ENTRY_COMPONENT_CLASS;
+        const newEntryTime = document.createElement("div");
+        newEntryTime.innerHTML = "Zeit: " + loadedScoreboard[i].time + "s";
+        newEntryTime.className = ENTRY_COMPONENT_CLASS;
+        const newEntryPairs = document.createElement("div");
+        newEntryPairs.innerHTML = "Paare: " + loadedScoreboard[i].pairs;
+        newEntryPairs.className = ENTRY_COMPONENT_CLASS;
+        const newEntryId = document.createElement("div");
+        newEntryId.innerHTML = "(Spiel #" + loadedScoreboard[i].id + ")";
+        newEntryId.className = ENTRY_COMPONENT_CLASS;
+       // newEntry.innerHTML = "Versuche: " + loadedScoreboard[i].tries + loadedScoreboard[i].pairs + loadedScoreboard[i].time;
+        document.getElementById("scoreboard").appendChild(newEntry);      
+        document.getElementById("scoreboardEntry" +i).appendChild(newEntryTries);
+        document.getElementById("scoreboardEntry" +i).appendChild(newEntryTime);
+        document.getElementById("scoreboardEntry" +i).appendChild(newEntryPairs);  
+        document.getElementById("scoreboardEntry" +i).appendChild(newEntryId);  
     }
 }
 
 function resetScoreboard() {
-    localStorage.clear();
+    localStorage.removeItem("memoryScoreboard");
+    localStorage.setItem("playedGamesCounter", 0);
     gameState.playedGamesCounter = 0;
     loadScoreboard();
-} */
+}
